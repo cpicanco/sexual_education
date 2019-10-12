@@ -20,7 +20,8 @@ type
     procedure SetOnButtonRightClick(AValue: TNotifyEvent);
     procedure SetOnButtonLeftClick(AValue: TNotifyEvent);
   public
-    constructor Create(AOwner: TComponent; ASimbling : TGraphicControl); reintroduce;
+    constructor Create(AOwner: TComponent); override;
+    procedure CentralizeBottom;
     property OnButtonLeftClick : TNotifyEvent read GetOnButtonLeftClick write SetOnButtonLeftClick;
     property OnButtonRightClick : TNotifyEvent read GetOnButtonRightClick write SetOnButtonRightClick;
   end;
@@ -51,32 +52,37 @@ begin
   FButtonLeft.OnClick:=AValue;
 end;
 
-constructor TGoLeftGoRight.Create(AOwner: TComponent; ASimbling: TGraphicControl);
+constructor TGoLeftGoRight.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+  Align:= alBottom;
   BevelColor:=$1FFFFFFF;
-  Height := 60;
-  Width := 400;
-  Top := ASimbling.Top + ASimbling.Height + 25;
-  Left := ASimbling.Left + (ASimbling.Width div 2) - (Width div 2);
+  Height := 100;
+
   FButtonLeft := TButton.Create(Self);
   FButtonLeft.Height := 55;
   FButtonLeft.Width := 150;
-  FButtonLeft.Caption := 'Verdadeiro';
+  FButtonLeft.Caption := 'Sim';
   FButtonLeft.Font.Size := 14;
-  FButtonLeft.Left := (Self.Width div 4) - (FButtonLeft.Width div 2);
-  FButtonLeft.Top := (Self.Height div 2) - (FButtonLeft.Height div 2);
   FButtonLeft.Parent := Self;
 
   FButtonRight := TButton.Create(Self);
   FButtonRight.Height := 55;
   FButtonRight.Width := 150;
-  FButtonRight.Caption := 'Falso';
+  FButtonRight.Caption := 'Não';
   FButtonRight.Font.Size := 14;
-  FButtonRight.Left := Self.Width - (Self.Width div 4) - (FButtonRight.Width div 2);
-  FButtonRight.Top := Self.Height - (Self.Height div 2) - (FButtonRight.Height div 2);
   FButtonRight.Parent := Self;
 end;
+
+procedure TGoLeftGoRight.CentralizeBottom;
+begin
+  FButtonLeft.Left := (Self.Width div 3) - (FButtonLeft.Width div 2);
+  FButtonLeft.Top := (Self.Height div 2) - (FButtonLeft.Height div 2);
+
+  FButtonRight.Left := Self.Width - (Self.Width div 3) - (FButtonRight.Width div 2);
+  FButtonRight.Top := Self.Height - (Self.Height div 2) - (FButtonRight.Height div 2);
+end;
+
 
 end.
 

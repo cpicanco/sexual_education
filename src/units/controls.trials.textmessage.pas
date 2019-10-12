@@ -17,7 +17,7 @@ uses LCLIntf, LCLType, Controls, Classes, SysUtils, StdCtrls, Graphics
 
   , Controls.Trials.Abstract
   , Controls.Trials.Helpers
-  {$IFDEF AUDIO}, Audio.Bass_nonfree {$ENDIF}
+  , Consequences
   ;
 
 type
@@ -30,23 +30,21 @@ type
 
   TMessageTrial = class(TTrial)
   private
-    {$IFDEF AUDIO}FAudio : TBassStream;{$ENDIF}
-    FAudioPlaying : Boolean;
+    FAudioPlayed : Boolean;
     FMessageStyle : TMessageStyle;
     FDataSupport : TDataSupport;
     FMessage : TLabel;
-    //procedure MessageMouseUp(Sender: TObject;Button: TMouseButton; Shift:TShiftState; X,Y:Integer);
+    FConsequence : TConsequence;
     procedure TrialBeforeEnd(Sender: TObject);
     procedure TrialKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure TrialStart(Sender: TObject);
   protected
     procedure WriteData(Sender: TObject); override;
-    //procedure ThreadClock(Sender: TObject); override;
   public
     constructor Create(AOwner: TCustomControl); override;
-    destructor Destroy;override;
-    function AsString : string; override;
     procedure Play(ACorrection : Boolean); override;
+    function AsString : string; override;
+    function HasConsequence: Boolean; override;
   end;
 
 resourcestring
@@ -58,10 +56,6 @@ implementation
 uses
   constants
   , Timestamps
-  {$IFDEF AUDIO}, Audio.BassCallbacks{$ENDIF}
-  {$ifdef DEBUG}
-  , Loggers.Debug
-  {$endif}
   ;
 
 constructor TMessageTrial.Create(AOwner: TCustomControl);
@@ -92,19 +86,8 @@ begin
   Result := T_NONE;
   IETConsequence := T_NONE;
   Result := T_NONE;
-
-  {$IFDEF AUDIO}GMessageTrialAudioWasPlayed := False;{$ENDIF}
-  FAudioPlaying := False;
-  {$IFDEF AUDIO}FAudio := nil;{$ENDIF}
-end;
-
-destructor TMessageTrial.Destroy;
-begin
-  {$IFDEF AUDIO}
-  if Assigned(FAudio) then
-    FAudio.Free;
-  {$ENDIF}
-  inherited Destroy;
+  FAudioPlayed := False;
+  FConsequence.Auditive := nil;
 end;
 
 function TMessageTrial.AsString: string;
@@ -112,39 +95,26 @@ begin
   Result := '';
 end;
 
-//
-//procedure TMessageTrial.MessageMouseUp(Sender: TObject; Button: TMouseButton;
-//  Shift: TShiftState; X, Y: Integer);
-//begin
-//  if Button = mbLeft then
-//    EndTrial(Sender);
-//end;
-
 procedure TMessageTrial.TrialKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   if Key = 32 then
     case FMessageStyle of
       msgDefault:
         EndTrial(Sender);
-      {$IFDEF AUDIO}
       msgAudio:
-        if GMessageTrialAudioWasPlayed then
+        if FAudioPlayed then
           EndTrial(Sender)
         else
-          if not FAudioPlaying then
-            begin
-              FAudioPlaying:=True;
-              FAudio.Play;
-            end;
-      {$ENDIF}
+          if HasConsequence then
+          begin
+            Consequences.Play(FConsequence);
+            FAudioPlayed:=True;
+          end;
     end;
 end;
 
 procedure TMessageTrial.TrialBeforeEnd(Sender: TObject);
 begin
-  {$ifdef DEBUG}
-    DebugLn(mt_Debug + 'TMSG.BeforeEndTrial:'+ TObject(Sender).ClassName);
-  {$endif}
   FDataSupport.StmEnd := TickCount;
   WriteData(Self);
 end;
@@ -152,33 +122,19 @@ end;
 procedure TMessageTrial.Play(ACorrection : Boolean);
 var
   LFontColor : Integer;
-  {$IFDEF AUDIO}LAudioFile : string;{$ENDIF}
   LParameters : TStringList;
 begin
   inherited Play(ACorrection);
   LParameters := Configurations.SList;
   LFontColor :=  StrToIntDef(LParameters.Values[_MsgFontColor], $000000);
   FMessageStyle := TMessageStyle(Ord(StrToIntDef(LParameters.Values[_Style], 0)));
-  {$IFDEF AUDIO}
   if FMessageStyle = msgAudio then
     begin
-      LAudioFile := LParameters.Values[_cStm];
-      case LAudioFile of
-        T_HIT  : LAudioFile := RootMedia+'CSQ1.wav';
-        T_MISS : LAudioFile := RootMedia+'CSQ2.wav';
-        else
-          LAudioFile := RootMedia+LAudioFile;
-      end;
-
-      if FileExists(LAudioFile) then
-        begin
-          FAudio := TBassStream.Create(LAudioFile);
-          FAudio.SyncProcedure := @EndOfMessageTrialAudio;
-        end
+      if LParameters.Values[_cStm] = T_HIT then
+        FConsequence := NextConsequence(True)
       else
-        raise Exception.Create('File does not exist: '+LAudioFile);
+        FConsequence := NextConsequence(False);
     end;
-  {$ENDIF}
 
   with FMessage do
     begin
@@ -190,6 +146,11 @@ begin
     end;
 
   if Self.ClassType = TMessageTrial then Config(Self);
+end;
+
+function TMessageTrial.HasConsequence: Boolean;
+begin
+  Result := FConsequence.Auditive <> nil;
 end;
 
 procedure TMessageTrial.TrialStart(Sender: TObject);

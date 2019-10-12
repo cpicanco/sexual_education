@@ -18,7 +18,7 @@ type
   private
     FCounterManager : TCounterManager;
     FInterTrial : TTimer;
-    FTrialConsequence : TTimer;
+    //FTrialConsequence : TTimer;
     FITIBegin, FITIEnd : Extended;
     FLastTrialHeader : string;
     FTrial : TTrial;
@@ -28,7 +28,7 @@ type
   private
     FOnEndBloc: TNotifyEvent;
     FOnInterTrialStop: TNotifyEvent;
-    procedure PlayIntertrialInterval(Sender: TObject);
+    //procedure PlayIntertrialInterval(Sender: TObject);
     procedure InterTrialStopTimer(Sender: TObject);
     procedure InterTrialTimer(Sender: TObject);
     procedure SetOnEndBloc(AValue: TNotifyEvent);
@@ -118,13 +118,13 @@ end;
 
 procedure TBloc.TrialEnd(Sender: TObject);
 begin
-  if FTrial.HasConsequence then
+  if FInterTrial.Interval > 0 then
     begin
-      FTrialConsequence.Interval := FTrial.StartConsequence;
-      FTrialConsequence.Enabled := True;
+      FInterTrial.Enabled := True;
+      FITIBegin := TickCount - GlobalContainer.TimeStart;
     end
   else
-    PlayInterTrialInterval(Sender);
+    InterTrialStopTimer(Sender);
 end;
 
 procedure TBloc.WriteTrialData(Sender: TObject);
@@ -174,22 +174,6 @@ begin
   SaveData(LReportLn);
 end;
 
-procedure TBloc.PlayIntertrialInterval(Sender: TObject);
-begin
-  if Assigned(FTrialConsequence) then
-  begin
-    FTrialConsequence.Enabled:=False;
-    FTrial.StopConsequence;
-  end;
-  if FInterTrial.Interval > 0 then
-    begin
-      FInterTrial.Enabled := True;
-      FITIBegin := TickCount - GlobalContainer.TimeStart;
-    end
-  else
-    InterTrialStopTimer(Sender);
-end;
-
 constructor TBloc.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
@@ -197,10 +181,6 @@ begin
   FInterTrial.Enabled := False;
   FInterTrial.OnTimer := @InterTrialTimer;
   FInterTrial.OnStopTimer := @InterTrialStopTimer;
-
-  FTrialConsequence := TTimer.Create(Self);
-  FTrialConsequence.Enabled := False;
-  FTrialConsequence.OnTimer := @PlayIntertrialInterval;
 
   FCounterManager := GlobalContainer.CounterManager;
   FLastTrialHeader := '';

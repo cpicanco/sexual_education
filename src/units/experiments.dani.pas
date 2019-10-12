@@ -24,7 +24,7 @@ uses Classes, SysUtils, Forms
 
 type
 
-  TResponseStyle = (Go, NoGo);
+  TResponseStyle = (None, Left, Right);
   //TScreenSide = (ssLeft, ssRight);
   TExperimentalCategory = (Sex, Rape, Control);
 
@@ -65,6 +65,8 @@ var
   TrialsSexACNoGo : TGoNoGoTrials;
 
   Message1 : string;
+  MessageHIT : string;
+  MessageMISS : string;
 
 const
   FolderClass1A =
@@ -95,7 +97,7 @@ const
 
   LimitedHold = 0;
 
-  ITI = 1250;
+  ITI = 1;
 
 procedure RandomizeStimuli(var Rand : array of integer);
 var
@@ -154,6 +156,9 @@ var
 
 begin
   LoadMessageFromFile(Message1, GlobalContainer.RootMedia+'Mensagem1.txt');
+  LoadMessageFromFile(MessageHIT, GlobalContainer.RootMedia+'Mensagem-acerto.txt');
+  LoadMessageFromFile(MessageMISS, GlobalContainer.RootMedia+'Mensagem-erro.txt');
+
   for Folder in Folders do
     ForceDirectories(GlobalContainer.RootMedia+Folder);
 
@@ -164,20 +169,20 @@ begin
   FindFilesFor(Class2BStimuli, GlobalContainer.RootMedia+FolderClass2B);
   FindFilesFor(Class2CStimuli, GlobalContainer.RootMedia+FolderClass2C);
 
-  MountTrialsFor(TrialsRapeABGo,   Class1AStimuli, Class1BStimuli, Rape, Go, 0);
-  MountTrialsFor(TrialsRapeABNoGo, Class1AStimuli, Class2BStimuli, Rape, NoGo, 1);
-  MountTrialsFor(TrialsSexABGo,    Class2AStimuli, Class2BStimuli, Sex,  Go, 2);
-  MountTrialsFor(TrialsSexABNoGo,  Class2AStimuli, Class1BStimuli, Sex,  NoGo, 3);
+  MountTrialsFor(TrialsRapeABGo,   Class1AStimuli, Class1BStimuli, Rape, Left, 0);
+  MountTrialsFor(TrialsRapeABNoGo, Class1AStimuli, Class2BStimuli, Rape, Right, 1);
+  MountTrialsFor(TrialsSexABGo,    Class2AStimuli, Class2BStimuli, Sex,  Left, 2);
+  MountTrialsFor(TrialsSexABNoGo,  Class2AStimuli, Class1BStimuli, Sex,  Right, 3);
 
-  MountTrialsFor(TrialsRapeBCGo,   Class1BStimuli, Class1CStimuli, Rape, Go, 4);
-  MountTrialsFor(TrialsRapeBCNoGo, Class1BStimuli, Class2CStimuli, Rape, NoGo, 5);
-  MountTrialsFor(TrialsSexBCGo,    Class2BStimuli, Class2CStimuli, Sex,  Go, 6);
-  MountTrialsFor(TrialsSexBCNoGo,  Class2BStimuli, Class1CStimuli, Sex,  NoGo, 7);
+  MountTrialsFor(TrialsRapeBCGo,   Class1BStimuli, Class1CStimuli, Rape, Left, 4);
+  MountTrialsFor(TrialsRapeBCNoGo, Class1BStimuli, Class2CStimuli, Rape, Right, 5);
+  MountTrialsFor(TrialsSexBCGo,    Class2BStimuli, Class2CStimuli, Sex,  Left, 6);
+  MountTrialsFor(TrialsSexBCNoGo,  Class2BStimuli, Class1CStimuli, Sex,  Right, 7);
 
-  MountTrialsFor(TrialsRapeACGo,   Class1AStimuli, Class1CStimuli, Rape, Go, 8);
-  MountTrialsFor(TrialsRapeACNoGo, Class1AStimuli, Class2CStimuli, Rape, NoGo, 9);
-  MountTrialsFor(TrialsSexACGo,    Class2AStimuli, Class2CStimuli, Sex,  Go, 10);
-  MountTrialsFor(TrialsSexACNoGo,  Class2AStimuli, Class1CStimuli, Sex,  NoGo, 11);
+  MountTrialsFor(TrialsRapeACGo,   Class1AStimuli, Class1CStimuli, Rape, Left, 8);
+  MountTrialsFor(TrialsRapeACNoGo, Class1AStimuli, Class2CStimuli, Rape, Right, 9);
+  MountTrialsFor(TrialsSexACGo,    Class2AStimuli, Class2CStimuli, Sex,  Left, 10);
+  MountTrialsFor(TrialsSexACNoGo,  Class2AStimuli, Class1CStimuli, Sex,  Right, 11);
 end;
 
 procedure NewConfigurationFile;
@@ -242,7 +247,7 @@ procedure MakeConfigurationFile(ACondition, ASessionBlocs: integer);
   18 tentativas 8go/8nogo
   1 contadores de acerto e erro do bloco
 }
-  procedure WriteMSGTrial(ABlc : integer);
+  procedure WriteMSG1Trial(ABlc : integer);
   var
     i : integer;
   begin
@@ -250,9 +255,44 @@ procedure MakeConfigurationFile(ACondition, ASessionBlocs: integer);
     with ConfigurationFile do
     begin
       WriteToTrial(i, ABlc, _Name, 'Mensagem 1');
+      WriteToTrial(i, ABlc, _Cursor, '-1');
       WriteToTrial(i, ABlc, _Kind, T_MSG);
       WriteToTrial(i, ABlc, _ITI, ITI.ToString);
       WriteToTrial(i, ABlc, _Msg, Message1)
+    end;
+  end;
+
+  procedure WriteMSG2Trial(ABlc : integer);
+  var
+    i : integer;
+  begin
+    i := ConfigurationFile.TrialCount[1]+1;
+    with ConfigurationFile do
+    begin
+      WriteToTrial(i, ABlc, _Name, 'Mensagem Acerto');
+      WriteToTrial(i, ABlc, _Cursor, '-1');
+      WriteToTrial(i, ABlc, _Kind, T_MSG);
+      WriteToTrial(i, ABlc, _ITI, ITI.ToString);
+      WriteToTrial(i, ABlc, _Style, '1');
+      WriteToTrial(i, ABlc, _cStm, T_HIT);
+      WriteToTrial(i, ABlc, _Msg, MessageHIT)
+    end;
+  end;
+
+  procedure WriteMSG3Trial(ABlc : integer);
+  var
+    i : integer;
+  begin
+    i := ConfigurationFile.TrialCount[1]+1;
+    with ConfigurationFile do
+    begin
+      WriteToTrial(i, ABlc, _Name, 'Mensagem Erro');
+      WriteToTrial(i, ABlc, _Cursor, '-1');
+      WriteToTrial(i, ABlc, _Kind, T_MSG);
+      WriteToTrial(i, ABlc, _ITI, ITI.ToString);
+      WriteToTrial(i, ABlc, _Style, '1');
+      WriteToTrial(i, ABlc, _cStm, T_MISS);
+      WriteToTrial(i, ABlc, _Msg, MessageMISS)
     end;
   end;
 
@@ -295,7 +335,7 @@ procedure MakeConfigurationFile(ACondition, ASessionBlocs: integer);
               Category,
               ResponseStyle
             ]));
-        WriteToTrial(i, ABlc, _Cursor, '1');
+        WriteToTrial(i, ABlc, _Cursor, '0');
         WriteToTrial(i, ABlc, _Kind, T_GNG);
         WriteToTrial(i, ABlc, _ResponseStyle, ResponseStyle);
         WriteToTrial(i, ABlc, _Category, Category);
@@ -339,7 +379,29 @@ procedure MakeConfigurationFile(ACondition, ASessionBlocs: integer);
       for i := Low(LTrialsToWrite) to High(LTrialsToWrite) do
         WriteTrial(LTrialsToWrite[i]);
     end;
+
+    procedure WriteBaselineTrials;
+    var
+      i : integer;
+      LStructuredTrials : TGoNoGoTrialsArray;
+      LTrialsToWrite : TGoNoGoTrials;
+    begin
+      LStructuredTrials := TGoNoGoTrialsArray.Create(
+        TrialsRapeACGo,
+        TrialsRapeACNoGo,
+        TrialsSexACGo,
+        TrialsSexACNoGo);
+      LTrialsToWrite := RandomizeTrials(LStructuredTrials);
+      for i := Low(LTrialsToWrite) to High(LTrialsToWrite) do
+      begin
+        LTrialsToWrite[i].ResponseStyle:= None;
+        WriteTrial(LTrialsToWrite[i]);
+      end;
+    end;
   begin
+    WriteBaselineTrials;
+    WriteMSG2Trial(ABlc);
+    WriteMSG3Trial(ABlc);
     WriteGoNoGoTrials;
     WriteReviewTrial;
   end;
@@ -353,14 +415,14 @@ begin
       for i := 1 to ASessionBlocs do
       begin
         ConfigurationFile.WriteToBloc(i, _Name, 'Experimental '+i.ToString);
-        if i = 1 then WriteMSGTrial(i);
+        if i = 1 then WriteMSG1Trial(i);
         WriteBloc(True, i);
       end;
     1 :
       for i := 1 to ASessionBlocs do
       begin
         ConfigurationFile.WriteToBloc(i, _Name, 'Controle '+i.ToString);
-        if i = 1 then WriteMSGTrial(i);
+        if i = 1 then WriteMSG1Trial(i);
         WriteBloc(False, i);
       end;
   end;

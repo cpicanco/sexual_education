@@ -19,7 +19,6 @@ uses LCLIntf, Controls, Classes, SysUtils, LazFileUtils
   , Controls.Trials.Helpers
   , Controls.Stimuli.Text
   , Controls.GoLeftGoRight
-  , Stimuli.Image
   , Schedules
   , Consequences
   ;
@@ -30,7 +29,7 @@ type
 
   { TGNG }
 
-  TGNG = Class(TTrial)
+  TGNG = class(TTrial)
   private
     FButtonResponse : TButtonSide;
     FDataSupport : TDataSupport;
@@ -48,7 +47,6 @@ type
     procedure TrialBeforeEnd(Sender: TObject);
     procedure TrialStart(Sender: TObject);
     procedure TrialResult(Sender: TObject);
-    procedure TrialKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
   protected
     { TTrial }
     procedure WriteData(Sender: TObject); override;
@@ -56,8 +54,6 @@ type
     constructor Create(AOwner: TCustomControl); override;
     destructor Destroy; override;
     procedure Play(ACorrection : Boolean); override;
-    procedure StopConsequence; override;
-    function StartConsequence : integer; override;
     function AsString : string; override;
     function HasConsequence: Boolean; override;
   end;
@@ -72,7 +68,6 @@ constructor TGNG.Create(AOwner: TCustomControl);
 begin
   inherited Create(AOwner);
   OnTrialBeforeEnd := @TrialBeforeEnd;
-  OnTrialKeyUp := @TrialKeyUp;
   OnTrialStart := @TrialStart;
   OnTrialPaint := @TrialPaint;
   FButtonResponse := ssNone;
@@ -87,7 +82,7 @@ end;
 
 destructor TGNG.Destroy;
 begin
-  {$IFDEF AUDIO} if Assigned(FSound) then FSound.Free; {$ENDIF}
+
   inherited Destroy;
 end;
 
@@ -97,13 +92,21 @@ begin
   begin
     case FButtonResponse of
       ssNone: Result := T_NONE;
-      ssLeft, ssRight:
-        if FButtonResponse = FButtonSide then
-          Result := T_HIT
-        else
-          Result := T_MISS;
+      ssLeft:
+        case FButtonSide of
+          ssNone: Result := T_NONE;
+          ssLeft: Result := T_HIT;
+          ssRight: Result := T_MISS;
+        end;
+      ssRight:
+        case FButtonSide of
+          ssNone: Result := T_NONE;
+          ssLeft: Result := T_MISS;
+          ssRight: Result := T_HIT;
+        end;
     end;
     FConsequence := NextConsequence(Result = T_HIT);
+    if HasConsequence then Consequences.Play(FConsequence);
   end;
 end;
 
@@ -119,24 +122,6 @@ procedure TGNG.Consequence(Sender: TObject);
 begin
   if Assigned(CounterManager.OnConsequence) then CounterManager.OnConsequence(Self);
   EndTrial(Sender);
-end;
-
-procedure TGNG.TrialKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
-begin
-  //if FButtonResponse = ssNone then
-  //begin
-  //  case Key of
-  //    67,  99 :
-  //      begin
-  //
-  //      end;
-  //
-  //    77, 109 :
-  //      begin
-  //
-  //      end;
-  //  end;
-  //end;
 end;
 
 procedure TGNG.TrialPaint;
@@ -159,7 +144,7 @@ end;
 procedure TGNG.ButtonLeftClick(Sender: TObject);
 begin
   FButtonResponse := ssLeft;
-  LogEvent('Verdadeiro');
+  LogEvent('Sim');
   //if FButtonSide = ssLeft then //force right response
   FSchedule.DoResponse;
 end;
@@ -167,7 +152,7 @@ end;
 procedure TGNG.ButtonRightClick(Sender: TObject);
 begin
   FButtonResponse := ssRight;
-  LogEvent('Falso');
+  LogEvent('Não');
   //if FButtonSide = ssRight then //force right response
   FSchedule.DoResponse;
 end;
@@ -199,17 +184,12 @@ begin
       CentralizeBottom;
     end;
 
-  with TLabelStimulus.Create(Self, Self.Parent) do
-  begin
-    Caption := 'O computador disse:';
-    Font.Bold := True;
-    CentralizeOnTopOfControl(FComparison);
-  end;
-
-  FOperandum := TGoLeftGoRight.Create(Self, FComparison);
+  FOperandum := TGoLeftGoRight.Create(Self);
   FOperandum.OnButtonRightClick:=@ButtonRightClick;
   FOperandum.OnButtonLeftClick:=@ButtonLeftClick;
   FOperandum.Parent := Self.Parent;
+  FOperandum.CentralizeBottom;
+
   FSchedule := TSchedule.Create(Self);
   with FSchedule do
     begin
@@ -219,23 +199,12 @@ begin
     end;
 
   case UpperCase(LConfiguration.Values[_ResponseStyle]) of
-    'GO'   : FButtonSide := ssLeft;
-    'NOGO' : FButtonSide := ssRight;
+    'LEFT'   : FButtonSide := ssLeft;
+    'RIGHT' : FButtonSide := ssRight;
+    'NONE' : FButtonSide := ssNone;
   end;
 
   if Self.ClassType = TGNG then Config(Self);
-end;
-
-procedure TGNG.StopConsequence;
-begin
-  FConsequence.Visual.Stop;
-end;
-
-function TGNG.StartConsequence: integer;
-begin
-  FConsequence.Visual.Parent := Self.Parent;
-  Consequences.Play(FConsequence);
-  Result := 1750 + Random(501);
 end;
 
 function TGNG.AsString: string;
@@ -250,6 +219,7 @@ end;
 
 procedure TGNG.TrialStart(Sender: TObject);
 begin
+  Mouse.CursorPos := Parent.ClientToScreen(Point(Parent.Width div 2, Parent.Height div 2));
   FSample.Show;
   FComparison.Show;
   FDataSupport.Latency := TimeStart;
