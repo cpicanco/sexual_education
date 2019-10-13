@@ -60,6 +60,7 @@ const
   _CustomNxtValue = 'CustomNxtValue';
   _Kind = 'Kind';
   _LimitedHold = 'LimitedHold';
+  _OperandumDelay = 'OperandumDelay';
   _Consequence = 'Consequence';
 
   // MRD

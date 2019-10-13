@@ -1,27 +1,29 @@
 object Background: TBackground
-  Left = 517
-  Height = 312
-  Top = 81
-  Width = 287
+  Left = 651
+  Height = 372
+  Top = 161
+  Width = 285
   Caption = 'Configurar sessão'
-  ClientHeight = 312
-  ClientWidth = 287
+  ClientHeight = 372
+  ClientWidth = 285
   Color = clWhite
   OnCreate = FormCreate
   OnKeyPress = FormKeyPress
+  SessionProperties = 'RadioGroupCondition.ItemIndex;SpinEditSessionBlocs.Value;SpinEditOperandumDelay.Value'
   LCLVersion = '2.0.2.0'
   object PanelConfigurations: TPanel
     Left = 3
-    Height = 284
+    Height = 364
     Top = 4
     Width = 278
-    ClientHeight = 284
+    ClientHeight = 364
     ClientWidth = 278
+    ParentColor = False
     TabOrder = 0
     object ButtonStart: TButton
       Left = 16
       Height = 56
-      Top = 184
+      Top = 256
       Width = 248
       Caption = 'Começar'
       OnClick = ButtonStartClick
@@ -43,30 +45,28 @@ object Background: TBackground
       ChildSizing.ControlsPerLine = 1
       ClientHeight = 66
       ClientWidth = 244
-      Font.Color = clBlack
       ItemIndex = 0
       Items.Strings = (
         'Grupo Experimental'
         'Grupo Controle'
       )
       OnClick = ExperimentParametersChange
-      ParentFont = False
       TabOrder = 1
       Visible = False
     end
     object EditParticipant: TEdit
       Left = 16
-      Height = 23
+      Height = 28
       Top = 8
       Width = 248
       TabOrder = 2
       Text = 'Participante'
     end
     object SpinEditSessionBlocs: TSpinEdit
-      Left = 112
-      Height = 23
-      Top = 144
-      Width = 152
+      Left = 136
+      Height = 28
+      Top = 138
+      Width = 128
       Font.Style = [fsBold]
       MaxValue = 6
       MinValue = 1
@@ -77,22 +77,48 @@ object Background: TBackground
     end
     object LabelSessionBlocs: TLabel
       Left = 16
-      Height = 15
+      Height = 18
       Top = 148
-      Width = 71
+      Width = 79
       Caption = 'N° de Blocos:'
-      Color = clActiveCaption
-      ParentColor = False
+      Color = clDefault
       Transparent = False
     end
     object ButtonShowStimuli: TButton
       Left = 16
       Height = 24
-      Top = 248
+      Top = 320
       Width = 248
-      Caption = 'Testar som'
+      Caption = 'Mostrar Estímulos'
       OnClick = ButtonShowStimuliClick
       TabOrder = 4
+      Visible = False
     end
+    object SpinEditOperandumDelay: TSpinEdit
+      Left = 136
+      Height = 28
+      Top = 210
+      Width = 128
+      Increment = 1000
+      MaxValue = 100000
+      OnEditingDone = ExperimentParametersChange
+      TabOrder = 5
+      Value = 1000
+    end
+    object LabelTrialOperandumDelay: TLabel
+      Left = 16
+      Height = 54
+      Top = 184
+      Width = 91
+      Caption = 'Atraso do'#10'operando,'#10'(milisegundos):'
+      Color = clDefault
+      Transparent = False
+    end
+  end
+  object IniPropStorage: TIniPropStorage
+    StoredValues = <>
+    IniFileName = 'configuracoes'
+    left = 208
+    top = 48
   end
 end

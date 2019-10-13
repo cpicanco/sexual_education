@@ -4,13 +4,14 @@ unit Experiments.Dani;
 
 interface
 
-procedure MakeConfigurationFile(ACondition, ASessionBlocs : integer);
+procedure MakeConfigurationFile(ACondition, ASessionBlocs, AOperandumDelay : integer);
 
 var
   ConfigurationFilename : string;
 
 const
   SessionBlocs = 1;
+  OperandumDelay = 1000;
 
 implementation
 
@@ -239,7 +240,8 @@ begin
   //  WriteLn(Result[i].ID);
 end;
 
-procedure MakeConfigurationFile(ACondition, ASessionBlocs: integer);
+procedure MakeConfigurationFile(ACondition, ASessionBlocs,
+  AOperandumDelay: integer);
 {
   bloco 1
   1 mensagem
@@ -340,6 +342,7 @@ procedure MakeConfigurationFile(ACondition, ASessionBlocs: integer);
         WriteToTrial(i, ABlc, _ResponseStyle, ResponseStyle);
         WriteToTrial(i, ABlc, _Category, Category);
         WriteToTrial(i, ABlc, _LimitedHold, LimitedHold.ToString);
+        WriteToTrial(i, ABlc, _OperandumDelay, AOperandumDelay.ToString);
         WriteToTrial(i, ABlc, _ITI, ITI.ToString);
         WriteToTrial(i, ABlc, _Samp+_cStm, ExtractMediaName(ATrial.SampleFilename));
         WriteToTrial(i, ABlc, _Comp+'1'+_cStm, ExtractMediaName(ATrial.ComparFilename));

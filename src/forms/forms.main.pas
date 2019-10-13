@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, StdCtrls,
-  Spin;
+  Spin, IniPropStorage;
 
 type
 
@@ -16,9 +16,12 @@ type
     ButtonShowStimuli: TButton;
     ButtonStart: TButton;
     EditParticipant: TEdit;
+    IniPropStorage: TIniPropStorage;
     LabelSessionBlocs: TLabel;
+    LabelTrialOperandumDelay: TLabel;
     PanelConfigurations: TPanel;
     RadioGroupCondition: TRadioGroup;
+    SpinEditOperandumDelay: TSpinEdit;
     SpinEditSessionBlocs: TSpinEdit;
     procedure ButtonShowStimuliClick(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
@@ -63,9 +66,6 @@ var
 procedure TBackground.ButtonStartClick(Sender: TObject);
 begin
   PanelConfigurations.Hide;
-  //if FormCheckStimuli.Visible then
-  //  FormCheckStimuli.Hide;
-
   Session.Backgrounds.Background := Self;
   {$IFDEF WINDOWS}SwitchFullScreen;{$ENDIF}
   LSession.Play(RadioGroupCondition.Items[RadioGroupCondition.ItemIndex], EditParticipant.Text);
@@ -111,7 +111,10 @@ begin
   if Initialized then
   begin
     ConfigurationFile.Free;
-    MakeConfigurationFile(RadioGroupCondition.ItemIndex, SpinEditSessionBlocs.Value);
+    MakeConfigurationFile(
+      RadioGroupCondition.ItemIndex,
+      SpinEditSessionBlocs.Value,
+      SpinEditOperandumDelay.Value);
   end;
 end;
 

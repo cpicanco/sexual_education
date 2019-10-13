@@ -90,8 +90,9 @@ begin
   FLabel.Parent := Self.Parent;
 
   FTimer := TTimer.Create(Self);
+  FTimer.Interval := 0;
   FTimer.Enabled := False;
-  //FTimer.OnTimer := @ShowOperandum;
+  FTimer.OnTimer := @ShowOperandum;
   FDataSupport.Responses:= 0;
 end;
 
@@ -183,6 +184,12 @@ begin
   FSchedule.DoResponse;
 end;
 
+procedure TGNG.ShowOperandum(Sender: TObject);
+begin
+  FTimer.Enabled:=False;
+  FOperandum.Show;
+end;
+
 procedure TGNG.Play(ACorrection: Boolean);
 var
   s1, LName : string;
@@ -210,6 +217,7 @@ begin
       CentralizeBottom;
     end;
 
+  FTimer.Interval := LConfiguration.Values[_OperandumDelay].ToInteger;
   FOperandum := TGoLeftGoRight.Create(Self);
   FOperandum.OnButtonRightClick:=@ButtonRightClick;
   FOperandum.OnButtonLeftClick:=@ButtonLeftClick;
@@ -250,6 +258,11 @@ begin
   FDataSupport.Latency := TimeStart;
   FDataSupport.StmBegin := TickCount;
   FSchedule.Start;
+  if FTimer.Interval > 0 then
+    begin
+      FOperandum.Hide;
+      FTimer.Enabled := True;
+    end;
   if FButtonSide = ssNone then FLabel.Hide;
 end;
 

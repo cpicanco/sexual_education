@@ -12,6 +12,10 @@ uses
 
 type
 
+  TSessionProperties = record
+    OperandumDelay : integer;
+  end;
+
   { TConfigurationFile }
 
   TConfigurationFile = class(TIniFile)
@@ -52,12 +56,39 @@ type
     property Trial[BlocIndex, TrialIndex : integer] : TCfgTrial read GetTrial {write SetTrial};
   end;
 
+function SessionPropertiesExists : Boolean;
+
+function LoadSessionProperties : TSessionProperties;
+
 var
   ConfigurationFile : TConfigurationFile;
 
 implementation
 
-uses constants, strutils;
+uses constants, strutils, Forms;
+
+var SessionPropertiesFile : string = '';
+
+function SessionPropertiesExists: Boolean;
+begin
+  SessionPropertiesFile :=
+    ExtractFilePath(Application.ExeName) + DirectorySeparator + 'configuracoes';
+  Result := FileExists(SessionPropertiesFile);
+end;
+
+function LoadSessionProperties: TSessionProperties;
+var
+  LSessionProperties : TIniFile;
+begin
+  LSessionProperties := TIniFile.Create(SessionPropertiesFile);
+  with LSessionProperties do
+    try
+      Result.OperandumDelay :=
+        ReadInteger('TApplication.Background','SpinEditOperandumDelay_Value', 0);
+    finally
+      Free;
+    end;
+end;
 
 { TConfigurationFile }
 
