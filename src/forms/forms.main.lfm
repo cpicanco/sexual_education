@@ -1,16 +1,15 @@
 object Background: TBackground
   Left = 517
-  Height = 485
+  Height = 312
   Top = 81
-  Width = 618
+  Width = 287
   Caption = 'Configurar sessão'
-  ClientHeight = 485
-  ClientWidth = 618
+  ClientHeight = 312
+  ClientWidth = 287
   Color = clWhite
   OnCreate = FormCreate
   OnKeyPress = FormKeyPress
   LCLVersion = '2.0.2.0'
-  WindowState = wsFullScreen
   object PanelConfigurations: TPanel
     Left = 3
     Height = 284
@@ -57,7 +56,7 @@ object Background: TBackground
     end
     object EditParticipant: TEdit
       Left = 16
-      Height = 28
+      Height = 23
       Top = 8
       Width = 248
       TabOrder = 2
@@ -65,7 +64,7 @@ object Background: TBackground
     end
     object SpinEditSessionBlocs: TSpinEdit
       Left = 112
-      Height = 28
+      Height = 23
       Top = 144
       Width = 152
       Font.Style = [fsBold]
@@ -78,9 +77,9 @@ object Background: TBackground
     end
     object LabelSessionBlocs: TLabel
       Left = 16
-      Height = 18
+      Height = 15
       Top = 148
-      Width = 79
+      Width = 71
       Caption = 'N° de Blocos:'
       Color = clActiveCaption
       ParentColor = False
@@ -91,10 +90,9 @@ object Background: TBackground
       Height = 24
       Top = 248
       Width = 248
-      Caption = 'Mostrar Estímulos'
+      Caption = 'Testar som'
       OnClick = ButtonShowStimuliClick
       TabOrder = 4
-      Visible = False
     end
   end
 end

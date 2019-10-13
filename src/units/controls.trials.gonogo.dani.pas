@@ -13,7 +13,7 @@ unit Controls.Trials.GoNoGo.Dani;
 
 interface
 
-uses LCLIntf, Controls, Classes, SysUtils, LazFileUtils
+uses LCLIntf, Controls, Classes, SysUtils, ExtCtrls, StdCtrls, LazFileUtils
 
   , Controls.Trials.Abstract
   , Controls.Trials.Helpers
@@ -31,6 +31,8 @@ type
 
   TGNG = class(TTrial)
   private
+    FLabel : TLabel;
+    FTimer : TTimer;
     FButtonResponse : TButtonSide;
     FDataSupport : TDataSupport;
     FSample : TLabelStimulus;
@@ -41,6 +43,7 @@ type
     FConsequence : TConsequence;
     procedure ButtonLeftClick(Sender: TObject);
     procedure ButtonRightClick(Sender: TObject);
+    procedure ShowOperandum(Sender : TObject);
     procedure TrialPaint;
     procedure Consequence(Sender: TObject);
     procedure Response(Sender: TObject);
@@ -60,7 +63,7 @@ type
 
 implementation
 
-uses StdCtrls, strutils, constants, Timestamps;
+uses Graphics, StrUtils, Constants, Timestamps;
 
 { TGNG }
 
@@ -76,7 +79,19 @@ begin
              rsReportRspLat + #9 +
              rsReportStmEnd + #9 +
              rsReportRspStl;
+  FLabel := TLabel.Create(Self);
+  FLabel.Top := 15;
+  FLabel.Left:= 15;
+  FLabel.Font.Size := 15;
+  FLabel.Alignment := taCenter;
+  FLabel.Layout := tlCenter;
+  FLabel.WordWrap := True;
+  FLabel.Caption := 'Seus Pontos: ' +LineEnding + (CounterManager.BlcHits * 17).ToString;
+  FLabel.Parent := Self.Parent;
 
+  FTimer := TTimer.Create(Self);
+  FTimer.Enabled := False;
+  //FTimer.OnTimer := @ShowOperandum;
   FDataSupport.Responses:= 0;
 end;
 
@@ -128,6 +143,17 @@ procedure TGNG.TrialPaint;
 var
   R : TRect;
 begin
+  if FLabel.Visible then
+    begin
+      R := FLabel.BoundsRect;
+      if InflateRect(R,5,5) then
+      begin
+        Canvas.Pen.Color := clBlack;
+        Canvas.Pen.Width := 2;
+      end;
+      Canvas.Rectangle(R);
+    end;
+
   if FSample.Visible then
     begin
       R := FSample.BoundsRect;
@@ -203,7 +229,6 @@ begin
     'RIGHT' : FButtonSide := ssRight;
     'NONE' : FButtonSide := ssNone;
   end;
-
   if Self.ClassType = TGNG then Config(Self);
 end;
 
@@ -225,6 +250,7 @@ begin
   FDataSupport.Latency := TimeStart;
   FDataSupport.StmBegin := TickCount;
   FSchedule.Start;
+  if FButtonSide = ssNone then FLabel.Hide;
 end;
 
 procedure TGNG.WriteData(Sender: TObject);

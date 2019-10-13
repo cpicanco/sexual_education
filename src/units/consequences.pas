@@ -9,7 +9,6 @@ interface
 uses
   Classes, SysUtils
   , CastleSoundEngine
-  , Stimuli.Image
   ;
 
 type
@@ -87,20 +86,6 @@ procedure LoadBuffers(AudiosHit, AudiosMiss : TStringArray);
 var
   i : integer;
 begin
-  //SetLength(VisualsHit, Length(ImagesHit));
-  //for i := Low(ImagesHit) to High(ImagesHit) do
-  //begin
-  //  VisualsHit[i] := TStimulusFigure.Create(nil);
-  //  VisualsHit[i].LoadFromFile(ImagesHit[i]);
-  //end;
-  //
-  //SetLength(VisualsMiss, Length(ImagesMiss));
-  //for i := Low(ImagesMiss) to High(ImagesMiss) do
-  //begin
-  //  VisualsMiss[i] := TStimulusFigure.Create(nil);
-  //  VisualsMiss[i].LoadFromFile(ImagesMiss[i]);
-  //end;
-
   SetLength(AudiblesHit, Length(AudiosHit));
   for i := Low(AudiosHit) to High(AudiosHit) do
   begin
@@ -113,31 +98,14 @@ begin
     AudiblesMiss[i] := SoundEngine.LoadBuffer(AudiosMiss[i]);
   end;
 end;
-//
-//procedure FreeBuffers;
-//var
-//  i : integer;
-//begin
-//  for i := Low(VisualsHit) to High(VisualsHit) do
-//    VisualsHit[i].Free;
-//  for i := Low(VisualsMiss) to High(VisualsMiss) do
-//    VisualsMiss[i].Free;
-//end;
 
 initialization
-  //FindFilesFor(ImageFilesHit,
-  //  GlobalContainer.RootMedia+FolderConsequences, ImageFilterHit);
-  //FindFilesFor(ImageFilesMiss,
-  //  GlobalContainer.RootMedia+FolderConsequences, ImageFilterMiss);
-
   FindFilesFor(AudioFilesHit,
     GlobalContainer.RootMedia+FolderConsequences, AudioFilterHit);
   FindFilesFor(AudioFilesMiss,
     GlobalContainer.RootMedia+FolderConsequences, AudioFilterMiss);
   LoadBuffers(AudioFilesHit, AudioFilesMiss);
 
-//finalization
-  //FreeBuffers;
 
 end.
 

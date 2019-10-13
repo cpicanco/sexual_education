@@ -51,7 +51,7 @@ uses
    , Session.Configuration.GlobalContainer
    , SessionSimple
    , Experiments.Dani
-   //, Forms.CheckStimuli
+   , Consequences
    ;
 
 { TBackground }
@@ -73,7 +73,7 @@ end;
 
 procedure TBackground.ButtonShowStimuliClick(Sender: TObject);
 begin
-
+  Consequences.Play(NextConsequence(True));
 end;
 
 procedure TBackground.FormCreate(Sender: TObject);
